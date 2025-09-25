@@ -34,7 +34,8 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateChange, tasks }
                 <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-white/20"><ChevronRight /></button>
             </div>
             <div className="grid grid-cols-7 gap-2 text-center text-sm text-white/60 mb-2">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => <div key={day}>{day}</div>)}
+                {/* Fixed the duplicate key warning by using index */}
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => <div key={`${day}-${index}`}>{day}</div>)}
             </div>
             <div className="grid grid-cols-7 gap-2">
                 {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`}></div>)}
@@ -59,5 +60,4 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateChange, tasks }
 };
 
 export default Calendar;
-
 
