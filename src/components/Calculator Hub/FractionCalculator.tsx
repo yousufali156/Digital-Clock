@@ -1,8 +1,27 @@
 import React, { useState, useMemo } from 'react';
-import { InputField, ResultDisplay } from './CalculatorUtils';
+import { ResultDisplay } from './CalculatorUtils';
 
 // A helper function to find the Greatest Common Divisor (GCD) to simplify fractions.
+// Type annotations have been added to the parameters and the return value.
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+// Defines the types for the props of the FractionInput component.
+interface FractionInputProps {
+    n: string;
+    d: string;
+    onNChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onDChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+// A small, reusable component to render the fraction input fields.
+const FractionInput: React.FC<FractionInputProps> = ({ n, d, onNChange, onDChange }) => (
+    <div className="flex flex-col items-center">
+        <input type="number" value={n} onChange={onNChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/>
+        <hr className="w-24 my-1 border-cyan-400" />
+        <input type="number" value={d} onChange={onDChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/>
+    </div>
+);
+
 
 const FractionCalculator: React.FC = () => {
     // State for the numerators and denominators of the two fractions.
@@ -49,22 +68,15 @@ const FractionCalculator: React.FC = () => {
             default:
                 return "Invalid Operation";
         }
+
+        if (resD === 0) return "Result denominator is zero";
         
         // Simplify the resulting fraction by dividing by the GCD.
         const commonDivisor = gcd(Math.abs(resN), Math.abs(resD));
         return `${resN / commonDivisor} / ${resD / commonDivisor}`;
 
     }, [n1, d1, n2, d2, op]);
-
-    // A small component to render the fraction input fields.
-    const FractionInput = ({ n, d, onNChange, onDChange }) => (
-        <div className="flex flex-col items-center">
-            <input type="number" value={n} onChange={onNChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/>
-            <hr className="w-24 my-1 border-cyan-400" />
-            <input type="number" value={d} onChange={onDChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/>
-        </div>
-    );
-
+    
     return (
         <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-sm mx-auto text-white">
             <h3 className="text-xl text-center font-bold text-cyan-300 mb-4">Fraction Calculator</h3>

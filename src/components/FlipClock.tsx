@@ -231,10 +231,10 @@ const FlipClock: React.FC = () => {
             
             <div className="mt-6 flex gap-4">
                 <button onClick={() => toggleTool('stopwatch')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${activeTool === 'stopwatch' ? 'bg-cyan-500 text-white' : 'bg-black/30 text-cyan-300 hover:bg-cyan-500/50'}`}>
-                    <Stopwatch size={18} /> Stopwatch
+                    <Stopwatch width={18} height={18} /> Stopwatch
                 </button>
                 <button onClick={() => toggleTool('timer')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${activeTool === 'timer' ? 'bg-amber-500 text-white' : 'bg-black/30 text-amber-300 hover:bg-amber-500/50'}`}>
-                    <Timer size={18} /> Timer
+                    <Timer  width={18} height={18} /> Timer
                 </button>
             </div>
 

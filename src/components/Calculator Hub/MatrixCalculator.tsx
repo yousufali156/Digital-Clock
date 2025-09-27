@@ -18,8 +18,13 @@ const MatrixCalculator: React.FC = () => {
         col: number,
         value: string
     ) => {
-        const newMatrix: Matrix = matrix === 'A' ? [...matrixA] : [...matrixB];
+        // Create a copy of the matrix to avoid direct state mutation.
+        const newMatrix: Matrix = matrix === 'A' 
+            ? matrixA.map(r => [...r]) as Matrix 
+            : matrixB.map(r => [...r]) as Matrix;
+
         newMatrix[row][col] = parseFloat(value) || 0;
+
         if (matrix === 'A') {
             setMatrixA(newMatrix);
         } else {
@@ -29,7 +34,7 @@ const MatrixCalculator: React.FC = () => {
 
     // This function calculates the result based on the selected operation.
     // useMemo ensures the calculation only runs when the input matrices or operation change.
-    const resultMatrix = useMemo<Matrix | string>(() => {
+    const resultMatrix = useMemo<Matrix>(() => {
         const res: Matrix = [[0, 0], [0, 0]];
         for (let i = 0; i < 2; i++) {
             for (let j = 0; j < 2; j++) {
@@ -46,7 +51,7 @@ const MatrixCalculator: React.FC = () => {
     }, [matrixA, matrixB, operation]);
 
     // This component renders a single matrix input grid.
-    const MatrixInput = ({ matrix, matrixName, onChange }: { matrix: Matrix, matrixName: 'A' | 'B', onChange: Function }) => (
+    const MatrixInput = ({ matrix, matrixName, onChange }: { matrix: Matrix, matrixName: 'A' | 'B', onChange: typeof handleMatrixChange }) => (
         <div className="flex flex-col items-center">
             <p className="text-lg font-bold mb-2 text-cyan-300">Matrix {matrixName}</p>
             <div className="grid grid-cols-2 gap-2 p-2 bg-black/30 rounded-md">
@@ -88,8 +93,9 @@ const MatrixCalculator: React.FC = () => {
                 <p className="text-lg font-bold text-amber-400">Result</p>
                 <div className="p-4 bg-black/50 rounded-lg inline-block mt-2">
                      <div className="grid grid-cols-2 gap-2">
-                         {resultMatrix.map((row, i) => 
-                            row.map((cell, j) => (
+                         {/* Check if resultMatrix is an array before mapping */}
+                         {Array.isArray(resultMatrix) && resultMatrix.map((row: number[], i: number) => 
+                            row.map((cell: number, j: number) => (
                                 <div key={`res-${i}-${j}`} className="w-16 h-16 flex items-center justify-center text-xl font-bold bg-[#102a43] rounded-md">
                                     {cell}
                                 </div>

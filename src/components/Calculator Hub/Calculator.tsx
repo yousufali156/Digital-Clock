@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GlassCard from './GlassCard';
 
 // --- Reusable Helper Components for Calculators ---
-// A reusable input field component for our calculators.
+// This reusable component creates a standardized input field for the calculators.
 const InputField = ({ label, value, onChange, unit, type = "number", placeholder = "" }: { label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, unit?: string, type?: string, placeholder?: string }) => (
     <div>
         <label className="text-sm text-cyan-300">{label}</label>
@@ -20,7 +20,7 @@ const InputField = ({ label, value, onChange, unit, type = "number", placeholder
     </div>
 );
 
-// A reusable component to display the result of a calculation.
+// This reusable component displays the result of calculations in a standard format.
 const ResultDisplay = ({ label, value, subValue = "" }: { label: string, value: string, subValue?: string }) => (
     <div className="mt-6 text-center bg-black/30 p-4 rounded-lg">
         <p className="text-lg">{label}</p>
@@ -242,8 +242,8 @@ const LoanAffordabilityCalculator: React.FC = () => {
 
 const FractionCalculator: React.FC = () => {
     const [n1, setN1] = useState('1'); const [d1, setD1] = useState('2'); const [n2, setN2] = useState('3'); const [d2, setD2] = useState('4'); const [op, setOp] = useState('+');
-    const result = useMemo(() => { const num1 = parseInt(n1), den1 = parseInt(d1), num2 = parseInt(n2), den2 = parseInt(d2); if(isNaN(num1) || isNaN(den1) || isNaN(num2) || isNaN(den2) || den1 === 0 || den2 === 0) return null; let resN, resD; if(op === '+') { resN = num1 * den2 + num2 * den1; resD = den1 * den2; } else if(op === '-') { resN = num1 * den2 - num2 * den1; resD = den1 * den2; } else if(op === '*') { resN = num1 * num2; resD = den1 * den2; } else { resN = num1 * den2; resD = den1 * num2; } const gcd = (a, b) => b === 0 ? a : gcd(b, a % b); const commonDivisor = gcd(resN, resD); return `${resN / commonDivisor} / ${resD / commonDivisor}`; }, [n1, d1, n2, d2, op]);
-    const FractionInput = ({ n, d, onNChange, onDChange }) => ( <div className="flex flex-col items-center"> <input type="number" value={n} onChange={onNChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/> <hr className="w-24 my-1" /> <input type="number" value={d} onChange={onDChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/> </div> );
+    const result = useMemo(() => { const num1 = parseInt(n1), den1 = parseInt(d1), num2 = parseInt(n2), den2 = parseInt(d2); if(isNaN(num1) || isNaN(den1) || isNaN(num2) || isNaN(den2) || den1 === 0 || den2 === 0) return null; let resN, resD; if(op === '+') { resN = num1 * den2 + num2 * den1; resD = den1 * den2; } else if(op === '-') { resN = num1 * den2 - num2 * den1; resD = den1 * den2; } else if(op === '*') { resN = num1 * num2; resD = den1 * den2; } else { resN = num1 * den2; resD = den1 * num2; } const gcd = (a:number, b:number):number => b === 0 ? a : gcd(b, a % b); const commonDivisor = gcd(resN, resD); return `${resN / commonDivisor} / ${resD / commonDivisor}`; }, [n1, d1, n2, d2, op]);
+    const FractionInput = ({ n, d, onNChange, onDChange } : {n:string, d:string, onNChange:(e: React.ChangeEvent<HTMLInputElement>)=>void, onDChange:(e: React.ChangeEvent<HTMLInputElement>)=>void}) => ( <div className="flex flex-col items-center"> <input type="number" value={n} onChange={onNChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/> <hr className="w-24 my-1" /> <input type="number" value={d} onChange={onDChange} className="w-20 bg-black/30 text-center text-xl text-white rounded-md p-2"/> </div> );
     return (
         <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-sm mx-auto text-white">
             <div className="flex items-center justify-center gap-4"> <FractionInput n={n1} d={d1} onNChange={e => setN1(e.target.value)} onDChange={e => setD1(e.target.value)} /> <select value={op} onChange={e => setOp(e.target.value)} className="bg-black/30 p-2 rounded-md"> <option>+</option> <option>-</option> <option>*</option> <option>/</option> </select> <FractionInput n={n2} d={d2} onNChange={e => setN2(e.target.value)} onDChange={e => setD2(e.target.value)} /> </div>
@@ -264,9 +264,90 @@ const ProbabilityCalculator: React.FC = () => {
     );
 };
 
+const BMICalculator: React.FC = () => {
+    const [height, setHeight] = useState<string>('');
+    const [weight, setWeight] = useState<string>('');
+    const [unit, setUnit] = useState<'metric' | 'imperial'>('metric');
+    const bmiResult = useMemo(() => { const h = parseFloat(height); const w = parseFloat(weight); if (!h || !w || h <= 0 || w <= 0) return null; let bmi; if (unit === 'metric') { bmi = w / ((h / 100) ** 2); } else { bmi = (w / (h ** 2)) * 703; } let category = ''; if (bmi < 18.5) category = 'Underweight'; else if (bmi <= 24.9) category = 'Normal weight'; else if (bmi <= 29.9) category = 'Overweight'; else category = 'Obesity'; return { value: bmi.toFixed(1), category }; }, [height, weight, unit]);
+    return (
+        <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-sm mx-auto text-white">
+            <div className="flex justify-center mb-4"> <button onClick={() => setUnit('metric')} className={`px-4 py-2 rounded-l-lg ${unit === 'metric' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Metric</button> <button onClick={() => setUnit('imperial')} className={`px-4 py-2 rounded-r-lg ${unit === 'imperial' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Imperial</button> </div>
+            <div className="space-y-4"> <div> <label className="block text-sm font-medium text-cyan-300">Height ({unit === 'metric' ? 'cm' : 'inches'})</label> <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} className="w-full mt-1 bg-black/30 p-2 rounded-md border border-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-400" /> </div> <div> <label className="block text-sm font-medium text-cyan-300">Weight ({unit === 'metric' ? 'kg' : 'lbs'})</label> <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} className="w-full mt-1 bg-black/30 p-2 rounded-md border border-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-400" /> </div> </div>
+            {bmiResult && ( <div className="mt-6 text-center bg-black/30 p-4 rounded-lg"> <p className="text-lg">Your BMI is</p> <p className="text-5xl font-bold text-amber-400 my-2">{bmiResult.value}</p> <p className="font-semibold text-cyan-300">{bmiResult.category}</p> </div> )}
+        </div>
+    );
+};
+
+const UnitConverter: React.FC = () => {
+    const CONVERSIONS = { length: { 'm': 1, 'cm': 0.01, 'km': 1000, 'in': 0.0254, 'ft': 0.3048, 'mi': 1609.34 }, weight: { 'kg': 1, 'g': 0.001, 'lb': 0.453592, 'oz': 0.0283495 }, temperature: { C: { F: (c: number) => c * 9/5 + 32, K: (c: number) => c + 273.15 }, F: { C: (f: number) => (f - 32) * 5/9, K: (f: number) => (f - 32) * 5/9 + 273.15 }, K: { C: (k: number) => k - 273.15, F: (k: number) => (k - 273.15) * 9/5 + 32 } } };
+    const [category, setCategory] = useState<'length' | 'weight' | 'temperature'>('length');
+    const [fromUnit, setFromUnit] = useState('m');
+    const [toUnit, setToUnit] = useState('ft');
+    const [inputValue, setInputValue] = useState('1');
+    const units = Object.keys(CONVERSIONS[category]);
+    const result = useMemo(() => { const value = parseFloat(inputValue); if (isNaN(value)) return ''; if (fromUnit === toUnit) return value.toString(); if (category === 'temperature') { return CONVERSIONS.temperature[fromUnit][toUnit](value).toFixed(2); } else { const baseValue = value * CONVERSIONS[category][fromUnit]; const finalValue = baseValue / CONVERSIONS[category][toUnit]; return finalValue.toFixed(4); } }, [inputValue, fromUnit, toUnit, category]);
+    const handleCategoryChange = (cat: 'length' | 'weight' | 'temperature') => { setCategory(cat); if (cat === 'length') { setFromUnit('m'); setToUnit('ft'); } if (cat === 'weight') { setFromUnit('kg'); setToUnit('lb'); } if (cat === 'temperature') { setFromUnit('C'); setToUnit('F'); } };
+    return (
+        <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-md mx-auto text-white">
+            <div className="flex justify-center gap-2 mb-4"> <button onClick={() => handleCategoryChange('length')} className={`px-3 py-1 text-sm rounded-full ${category === 'length' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Length</button> <button onClick={() => handleCategoryChange('weight')} className={`px-3 py-1 text-sm rounded-full ${category === 'weight' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Weight</button> <button onClick={() => handleCategoryChange('temperature')} className={`px-3 py-1 text-sm rounded-full ${category === 'temperature' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Temperature</button> </div>
+            <div className="flex items-center gap-4">
+                <div className="w-1/2"> <input type="number" value={inputValue} onChange={e => setInputValue(e.target.value)} className="w-full bg-black/30 p-2 rounded-md border border-cyan-500/30" /> <select value={fromUnit} onChange={e => setFromUnit(e.target.value)} className="w-full mt-2 bg-[#1e3a5f] p-2 rounded-md"> {units.map(u => <option key={u} value={u}>{u}</option>)} </select> </div>
+                <div className="w-1/2"> <input type="text" value={result} readOnly className="w-full bg-black/50 p-2 rounded-md border border-cyan-500/50 text-amber-300" /> <select value={toUnit} onChange={e => setToUnit(e.target.value)} className="w-full mt-2 bg-[#1e3a5f] p-2 rounded-md"> {units.map(u => <option key={u} value={u}>{u}</option>)} </select> </div>
+            </div>
+        </div>
+    );
+};
+
+const DateCalculator: React.FC = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const [fromDate, setFromDate] = useState(today);
+    const [toDate, setToDate] = useState(today);
+    const difference = useMemo(() => { const start = new Date(fromDate); const end = new Date(toDate); if (isNaN(start.getTime()) || isNaN(end.getTime())) return null; const diffTime = Math.abs(end.getTime() - start.getTime()); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); return `${diffDays} days`; }, [fromDate, toDate]);
+    return (
+        <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-sm mx-auto text-white">
+            <div className="space-y-4"> <div> <label className="text-sm">From Date</label> <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="w-full mt-1 bg-black/30 p-2 rounded-md" /> </div> <div> <label className="text-sm">To Date</label> <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="w-full mt-1 bg-black/30 p-2 rounded-md" /> </div> </div>
+            {difference && ( <div className="mt-6 text-center bg-black/30 p-4 rounded-lg"> <p className="text-lg">Difference</p> <p className="text-4xl font-bold text-amber-400 my-2">{difference}</p> </div> )}
+        </div>
+    );
+};
+
+const EquationSolver: React.FC = () => {
+    const [a, setA] = useState('1');
+    const [b, setB] = useState('5');
+    const [c, setC] = useState('6');
+    const roots = useMemo(() => { const numA = parseFloat(a); const numB = parseFloat(b); const numC = parseFloat(c); if (isNaN(numA) || isNaN(numB) || isNaN(numC) || numA === 0) return null; const discriminant = numB * numB - 4 * numA * numC; if (discriminant > 0) { const x1 = (-numB + Math.sqrt(discriminant)) / (2 * numA); const x2 = (-numB - Math.sqrt(discriminant)) / (2 * numA); return `x₁ = ${x1.toFixed(3)}, x₂ = ${x2.toFixed(3)}`; } else if (discriminant === 0) { const x = -numB / (2 * numA); return `x = ${x.toFixed(3)}`; } else { return "No real roots"; } }, [a, b, c]);
+    return (
+        <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-sm mx-auto text-white">
+            <div className="flex items-center justify-center gap-2"> <input type="number" value={a} onChange={e => setA(e.target.value)} className="w-16 bg-black/30 p-2 rounded-md" /><span>x² +</span> <input type="number" value={b} onChange={e => setB(e.target.value)} className="w-16 bg-black/30 p-2 rounded-md" /><span>x +</span> <input type="number" value={c} onChange={e => setC(e.target.value)} className="w-16 bg-black/30 p-2 rounded-md" /><span>= 0</span> </div>
+            {roots && ( <div className="mt-6 text-center bg-black/30 p-4 rounded-lg"> <p className="text-lg">Roots</p> <p className="text-3xl font-bold text-amber-400 my-2">{roots}</p> </div> )}
+        </div>
+    );
+};
+
+type Matrix = [[number, number], [number, number]];
+const MatrixCalculator: React.FC = () => {
+    const [matrixA, setMatrixA] = useState<Matrix>([[1, 2], [3, 4]]);
+    const [matrixB, setMatrixB] = useState<Matrix>([[5, 6], [7, 8]]);
+    const [operation, setOperation] = useState<'add' | 'subtract' | 'multiply'>('add');
+    const handleMatrixChange = (matrix: 'A' | 'B', row: number, col: number, value: string) => { const newMatrix: Matrix = matrix === 'A' ? [...matrixA] : [...matrixB]; newMatrix[row][col] = parseFloat(value) || 0; if (matrix === 'A') { setMatrixA(newMatrix); } else { setMatrixB(newMatrix); } };
+    const resultMatrix = useMemo<Matrix>(() => { const res: Matrix = [[0, 0], [0, 0]]; for (let i = 0; i < 2; i++) { for (let j = 0; j < 2; j++) { if (operation === 'add') { res[i][j] = matrixA[i][j] + matrixB[i][j]; } else if (operation === 'subtract') { res[i][j] = matrixA[i][j] - matrixB[i][j]; } else if (operation === 'multiply') { res[i][j] = matrixA[i][0] * matrixB[0][j] + matrixA[i][1] * matrixB[1][j]; } } } return res; }, [matrixA, matrixB, operation]);
+    const MatrixInput = ({ matrix, matrixName, onChange }: { matrix: Matrix, matrixName: 'A' | 'B', onChange: Function }) => ( <div className="flex flex-col items-center"> <p className="text-lg font-bold mb-2 text-cyan-300">Matrix {matrixName}</p> <div className="grid grid-cols-2 gap-2 p-2 bg-black/30 rounded-md"> {matrix.map((row, i) => row.map((cell, j) => ( <input key={`${matrixName}-${i}-${j}`} type="number" value={cell} onChange={(e) => onChange(matrixName, i, j, e.target.value)} className="w-16 h-16 bg-[#1e3a5f] text-center text-xl text-white rounded-md" /> )))} </div> </div> );
+    return (
+        <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-lg mx-auto text-white">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                <MatrixInput matrix={matrixA} matrixName="A" onChange={handleMatrixChange} />
+                <div className="flex md:flex-col gap-2"> <button onClick={() => setOperation('add')} className={`p-2 rounded-full ${operation === 'add' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>+</button> <button onClick={() => setOperation('subtract')} className={`p-2 rounded-full ${operation === 'subtract' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>-</button> <button onClick={() => setOperation('multiply')} className={`p-2 rounded-full ${operation === 'multiply' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>×</button> </div>
+                <MatrixInput matrix={matrixB} matrixName="B" onChange={handleMatrixChange} />
+            </div>
+            <div className="mt-6 text-center"> <p className="text-lg font-bold text-amber-400">Result</p> <div className="p-4 bg-black/50 rounded-lg inline-block mt-2"> <div className="grid grid-cols-2 gap-2"> {resultMatrix.map((row, i) => row.map((cell, j) => ( <div key={`res-${i}-${j}`} className="w-16 h-16 flex items-center justify-center text-xl font-bold bg-[#102a43] rounded-md">{cell}</div> )))} </div> </div> </div>
+        </div>
+    );
+};
+
+
 // --- Main Calculator Hub Component ---
 const CALCULATOR_TABS: Record<string, { label: string; description: string; component: JSX.Element }> = {
-    general: { label: 'General', description: "A standard calculator for daily arithmetic operations like addition, subtraction, multiplication, and division.", component: <GeneralCalculator /> },
+    general: { label: 'General', description: "A standard calculator for daily arithmetic operations.", component: <GeneralCalculator /> },
     scientific: { label: 'Scientific', description: "An advanced calculator for complex calculations, including trigonometric functions, logarithms, and roots.", component: <ScientificCalculator /> },
     age: { label: 'Age', description: "Calculates the exact age between two dates in years, months, and days.", component: <AgeCalculator /> },
     discount: { label: 'Discount', description: "Find the final price after applying discounts and taxes to see how much you save.", component: <DiscountCalculator /> },
@@ -283,55 +364,32 @@ const CALCULATOR_TABS: Record<string, { label: string; description: string; comp
     loan_affordability: { label: 'Loan Affordability', description: "Estimate the maximum loan you can likely afford based on your income and debts.", component: <LoanAffordabilityCalculator /> },
     fraction: { label: 'Fractions', description: "Perform basic arithmetic with fractions, including addition, subtraction, multiplication, and division.", component: <FractionCalculator /> },
     probability: { label: 'Probability', description: "A tool for computing permutations (nPr) and combinations (nCr) for a given set of items.", component: <ProbabilityCalculator /> },
+    bmi: { label: 'BMI', description: "Calculate your Body Mass Index (BMI).", component: <BMICalculator /> },
+    unit: { label: 'Unit Converter', description: "Convert between different units.", component: <UnitConverter /> },
+    date: { label: 'Date', description: "Find the number of days between two dates.", component: <DateCalculator /> },
+    equation: { label: 'Equation', description: "Solve quadratic equations.", component: <EquationSolver /> },
+    matrix: { label: 'Matrix', description: "Perform basic 2x2 matrix operations.", component: <MatrixCalculator /> },
 };
+
 
 const Calculator: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
-
     if (!isOpen) {
-        return (
-             <div className="cursor-pointer" onClick={() => setIsOpen(true)}>
-                <GlassCard className="p-4 md:p-6 w-full flex flex-col items-center justify-center min-h-[120px]">
-                    <h2 className="text-2xl font-bold text-cyan-300 text-center">
-                        🧮 Calculator Hub
-                    </h2>
-                    <p className="text-sm text-white/70 mt-2">Click to open</p>
-                </GlassCard>
-            </div>
-        );
+        return ( <div className="cursor-pointer" onClick={() => setIsOpen(true)}> <GlassCard className="p-4 md:p-6 w-full flex flex-col items-center justify-center min-h-[120px]"> <h2 className="text-2xl font-bold text-cyan-300 text-center">🧮 Calculator Hub</h2> <p className="text-sm text-white/70 mt-2">Click to open</p> </GlassCard> </div> );
     }
-
     const activeCalculator = CALCULATOR_TABS[activeTab];
-
     return (
         <GlassCard className="p-4 md:p-6 w-full">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-cyan-300">🧮 Calculator Hub</h2>
-                <button onClick={() => setIsOpen(false)} className="text-3xl text-red-500 hover:text-red-400">&times;</button>
-            </div>
-            
+            <div className="flex justify-between items-center mb-4"> <h2 className="text-2xl font-bold text-cyan-300">🧮 Calculator Hub</h2> <button onClick={() => setIsOpen(false)} className="text-3xl text-red-500 hover:text-red-400">&times;</button> </div>
             <div className="flex flex-wrap justify-center gap-2 mb-4">
                 {Object.entries(CALCULATOR_TABS).map(([key, { label }]) => (
-                    <button
-                        key={key}
-                        onClick={() => setActiveTab(key)}
-                        className={`px-3 py-1 text-xs md:text-sm rounded-full transition-colors ${activeTab === key ? 'bg-cyan-500 text-white' : 'bg-[#1e3a5f] hover:bg-cyan-500/50'}`}
-                    >
-                        {label}
-                    </button>
+                    <button key={key} onClick={() => setActiveTab(key)} className={`px-3 py-1 text-xs md:text-sm rounded-full transition-colors ${activeTab === key ? 'bg-cyan-500 text-white' : 'bg-[#1e3a5f] hover:bg-cyan-500/50'}`}>{label}</button>
                 ))}
             </div>
-            
             <div className="mt-4">
                 <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                    >
+                    <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                         <div className="bg-black/20 p-3 rounded-lg mb-4 text-center">
                              <h3 className="text-lg font-bold text-amber-400">{activeCalculator.label}</h3>
                              <p className="text-xs text-white/80 mt-1">{activeCalculator.description}</p>

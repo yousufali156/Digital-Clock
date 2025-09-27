@@ -135,7 +135,7 @@ const GeminiGoalGenerator: React.FC = () => {
             <h2 className="text-xl font-bold text-cyan-300 mb-4">Goal Suggester</h2>
             <div className="flex flex-col items-center text-center">
                 <button onClick={fetchGoal} disabled={isLoading} className="flex items-center gap-2 bg-cyan-500 text-white font-bold px-6 py-3 rounded-lg hover:bg-cyan-600 transition-transform transform hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed">
-                    <Sparkles size={20} />
+                    <Sparkles width={20} height={20} />
                     {isLoading ? "Suggesting..." : "Suggest a Goal"}
                 </button>
                 {error && <p className="text-red-400 mt-4">{error}</p>}
