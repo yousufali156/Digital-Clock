@@ -4,14 +4,45 @@ const getTimeInZone = (zone: string) =>
   new Date(new Date().toLocaleString("en-US", { timeZone: zone }));
 
 const TIMEZONES = [
-  "Asia/Dhaka", "Asia/Kolkata", "Asia/Tokyo", "Asia/Shanghai", "Asia/Singapore",
-  "Asia/Seoul", "Asia/Bangkok", "Asia/Jakarta", "Asia/Kuala_Lumpur", "Asia/Manila",
-  "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Moscow", "Europe/Rome",
-  "Europe/Madrid", "Europe/Amsterdam", "Europe/Zurich", "Europe/Stockholm", "Europe/Oslo",
-  "America/New_York", "America/Los_Angeles", "America/Chicago", "America/Denver",
-  "America/Toronto", "America/Vancouver", "America/Mexico_City", "America/Sao_Paulo",
-  "Australia/Sydney", "Australia/Melbourne", "Australia/Perth", "Australia/Brisbane"
+  // Asia
+  "Asia/Dhaka", "Asia/Kolkata", "Asia/Kolkata", "Asia/Kolkata", "Asia/Kolkata", "Asia/Tokyo", "Asia/Shanghai",
+  "Asia/Singapore", "Asia/Seoul", "Asia/Bangkok", "Asia/Jakarta", "Asia/Kuala_Lumpur", "Asia/Manila",
+  "Asia/Hong_Kong", "Asia/Taipei", "Asia/Karachi", "Asia/Colombo", "Asia/Baghdad", "Asia/Tehran", "Asia/Dubai",
+  "Asia/Jerusalem", "Asia/Riyadh", "Asia/Beirut", "Asia/Ho_Chi_Minh",
+
+  // Europe
+  "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Moscow", "Europe/Rome", "Europe/Madrid",
+  "Europe/Amsterdam", "Europe/Zurich", "Europe/Stockholm", "Europe/Oslo", "Europe/Vienna", "Europe/Brussels",
+  "Europe/Bucharest", "Europe/Athens", "Europe/Dublin", "Europe/Helsinki", "Europe/Lisbon", "Europe/Prague",
+  "Europe/Warsaw", "Europe/Budapest", "Europe/Copenhagen", "Europe/Belgrade",
+
+  // North America
+  "America/New_York", "America/Los_Angeles", "America/Chicago", "America/Denver", "America/Toronto",
+  "America/Vancouver", "America/Mexico_City", "America/Sao_Paulo", "America/Argentina/Buenos_Aires",
+  "America/Caracas", "America/Bogota", "America/Lima", "America/Guatemala", "America/Havana", "America/Panama",
+  "America/Anchorage", "America/Winnipeg", "America/Detroit", "America/Phoenix", "America/Indianapolis",
+
+  // South America
+  "America/Santiago", "America/Montevideo", "America/Recife", "America/La_Paz",
+
+  // Africa
+  "Africa/Cairo", "Africa/Johannesburg", "Africa/Lagos", "Africa/Nairobi", "Africa/Algiers", "Africa/Casablanca",
+  "Africa/Accra", "Africa/Khartoum", "Africa/Dakar", "Africa/Tripoli",
+
+  // Oceania
+  "Australia/Sydney", "Australia/Melbourne", "Australia/Perth", "Australia/Brisbane",
+  "Pacific/Auckland", "Pacific/Fiji", "Pacific/Guam",
+
+  // Middle East
+  "Asia/Jerusalem", "Asia/Dubai", "Asia/Riyadh", "Asia/Tehran", "Asia/Baghdad",
+
+  // Other Major Cities
+  "Pacific/Honolulu", "America/Anchorage", "America/Halifax", "America/St_Johns", "Asia/Yekaterinburg",
+  "Asia/Novosibirsk", "Asia/Krasnoyarsk", "Asia/Irkutsk", "Asia/Yakutsk", "Asia/Vladivostok", "Asia/Magadan",
+  "Europe/Istanbul", "Europe/Kiev", "Europe/Minsk", "Europe/Riga", "Europe/Tallinn", "Europe/Vilnius", "Europe/Sofia",
+  "Europe/Belgrade", "Europe/Skopje", "Europe/Ljubljana", "Europe/Zagreb", "Europe/Sarajevo"
 ];
+
 
 const AnalogClock: React.FC = () => {
   const [time, setTime] = useState(new Date());
@@ -129,25 +160,38 @@ const AnalogClock: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 w-5 h-5 rounded-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-red-500 to-red-800 border border-white shadow-md z-40" />
 
         {/* Digital Clock */}
-        <div className="absolute bottom-6 text-green-400 text-xl font-mono tracking-wider z-30">{time.toLocaleTimeString("en-US", { hour12: true })}</div>
+        <div className="absolute bottom-15 text-green-400 text-xl font-mono tracking-wider z-30">{time.toLocaleTimeString("en-US", { hour12: true })}</div>
 
         {/* Weather Info */}
         {temperature !== null && location && <div className="absolute top-6 left-4 sm:left-8 text-green-400 text-sm">🌡️ {temperature}°C — {location}</div>}
 
         {/* Alarm Indicator */}
-        {alarm && <div className="absolute bottom-20 text-yellow-400 text-sm animate-pulse">🔔 Alarm set: {alarm}</div>}
+        {alarm && <div className="absolute bottom-22 text-yellow-400 text-sm animate-pulse">🔔 Alarm set: {alarm}</div>}
 
         {/* Single Line Controls */}
         <div className="absolute -bottom-28 w-full flex flex-wrap justify-center items-center gap-2 sm:gap-3">
           <input type="time" value={alarmInput} onChange={(e) => setAlarmInput(e.target.value)} className="px-2 py-1 rounded bg-black text-green-400 border border-green-400 text-sm" />
-          <button onClick={() => setAlarm(alarmInput)} className="px-3 py-1 rounded bg-green-500 text-black font-semibold text-sm shadow hover:bg-green-400">Set Alarm</button>
+
+          <button onClick={() => setAlarm(alarmInput)} className="px-2 py-0 rounded bg-green-500 text-black font-semibold text-sm shadow hover:bg-green-400">Set Alarm</button>
+
           <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className="px-2 py-1 text-sm rounded bg-black text-green-400 border border-green-400">
             {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz.split("/")[1].replace("_", " ")}</option>)}
           </select>
+
         </div>
 
         {/* Theme Toggle */}
-        <button onClick={() => setDarkMode(!darkMode)} className="absolute -top-12 px-2 py-1 rounded bg-gray-700 text-white text-sm shadow hover:bg-gray-600">{darkMode ? "☀️ Light" : "🌙 Dark"}</button>
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className={`absolute -top-12 px-3 py-1 rounded shadow text-sm font-semibold transition-colors duration-300
+         ${darkMode
+              ? "bg-gray-700 text-green-400 hover:bg-gray-600"
+              : "bg-yellow-300 text-black hover:bg-yellow-400"
+            }`}
+        >
+          {darkMode ? "☀️ Light" : "🌙 Dark"}
+        </button>
+
       </div>
     </div>
   );
