@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { padZero } from '../utils/helpers';
-import { Play, Pause, RotateCcw, Timer, Stopwatch, Flag } from './Icons';
+import { Play, Pause, RotateCcw, Timer, Stopwatch, Flag, Clock } from './Icons'; // Clock আইকন ইম্পোর্ট করা হয়েছে
 import GlassCard from './GlassCard';
+import AnalogClock from './AnalogClock';
 
 // --- Custom Hook for Local Storage State ---
 // This hook syncs state with the browser's localStorage.
@@ -40,7 +41,7 @@ const formatTime = (time: number) => {
 // --- Flip Unit Component ---
 // Renders a single unit of the clock with a 3D flip animation.
 const FlipUnit = ({ value }: { value: string }) => (
-    <div className="relative w-[70px] h-[90px] md:w-[100px] md:h-[120px] bg-[#1a1a1a] text-cyan-300 rounded-lg shadow-2xl flex items-center justify-center text-5xl md:text-7xl font-black perspective-1000">
+    <div className="relative w-[70px] h-[90px] md:w-[100px] h-[120px] bg-[#1a1a1a] text-cyan-300 rounded-lg shadow-2xl flex items-center justify-center text-5xl md:text-7xl font-black perspective-1000">
         <AnimatePresence>
             <motion.div
                 key={value}
@@ -174,16 +175,16 @@ const TimerComponent = () => {
         <GlassCard className="p-6 w-full max-w-md mx-auto">
             {!isRunning ? (
                  <div className="flex gap-2 items-center justify-center mb-4">
-                    <input type="number" name="hours" placeholder='HH' value={duration.hours} onChange={handleInputChange} className="w-20 bg-black/30 text-center text-4xl text-amber-400 rounded-md" min="0" />
-                    <span className="text-4xl text-amber-400">:</span>
-                    <input type="number" name="minutes" placeholder='MM' value={duration.minutes} onChange={handleInputChange} className="w-20 bg-black/30 text-center text-4xl text-amber-400 rounded-md" min="0" max="59" />
+                     <input type="number" name="hours" placeholder='HH' value={duration.hours} onChange={handleInputChange} className="w-20 bg-black/30 text-center text-4xl text-amber-400 rounded-md" min="0" />
                      <span className="text-4xl text-amber-400">:</span>
-                    <input type="number" name="seconds" placeholder='SS' value={duration.seconds} onChange={handleInputChange} className="w-20 bg-black/30 text-center text-4xl text-amber-400 rounded-md" min="0" max="59" />
-                </div>
+                     <input type="number" name="minutes" placeholder='MM' value={duration.minutes} onChange={handleInputChange} className="w-20 bg-black/30 text-center text-4xl text-amber-400 rounded-md" min="0" max="59" />
+                      <span className="text-4xl text-amber-400">:</span>
+                     <input type="number" name="seconds" placeholder='SS' value={duration.seconds} onChange={handleInputChange} className="w-20 bg-black/30 text-center text-4xl text-amber-400 rounded-md" min="0" max="59" />
+                 </div>
             ) : (
-                <div className="text-5xl md:text-6xl font-mono text-amber-400 tracking-widest text-center mb-4">
-                    {displayHours}:{displayMinutes}:{displaySeconds}
-                </div>
+                 <div className="text-5xl md:text-6xl font-mono text-amber-400 tracking-widest text-center mb-4">
+                     {displayHours}:{displayMinutes}:{displaySeconds}
+                 </div>
             )}
             <div className="flex justify-center gap-4 my-4">
                 <button onClick={handleStartStop} className="bg-cyan-500/80 text-white p-3 rounded-full hover:bg-cyan-600" aria-label={isRunning ? "Pause timer" : "Start timer"}><span className="w-6 h-6 flex items-center justify-center">{isRunning ? <Pause /> : <Play />}</span></button>
@@ -203,6 +204,8 @@ const TimerComponent = () => {
 const FlipClock: React.FC = () => {
     const [time, setTime] = useState(new Date());
     const [activeTool, setActiveTool] = useState<'stopwatch' | 'timer' | null>(null);
+    // 🎯 পরিবর্তন শুরু: অ্যানালগ ঘড়ির visibility নিয়ন্ত্রণের জন্য নতুন state
+    const [showAnalogClock, setShowAnalogClock] = useState(false);
 
     useEffect(() => {
         const timerId = setInterval(() => setTime(new Date()), 1000);
@@ -214,6 +217,11 @@ const FlipClock: React.FC = () => {
 
     const toggleTool = (tool: 'stopwatch' | 'timer') => {
         setActiveTool(activeTool === tool ? null : tool);
+    };
+    
+    // 🎯 পরিবর্তন: অ্যানালগ ঘড়ির state টগল করার জন্য ফাংশন
+    const toggleAnalogClock = () => {
+        setShowAnalogClock(prev => !prev);
     };
 
     return (
@@ -236,6 +244,10 @@ const FlipClock: React.FC = () => {
                 <button onClick={() => toggleTool('timer')} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${activeTool === 'timer' ? 'bg-amber-500 text-white' : 'bg-black/30 text-amber-300 hover:bg-amber-500/50'}`}>
                     <Timer  width={18} height={18} /> Timer
                 </button>
+                {/* 🎯 পরিবর্তন: অ্যানালগ ঘড়ি দেখানোর জন্য নতুন বাটন */}
+                <button onClick={toggleAnalogClock} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm ${showAnalogClock ? 'bg-green-500 text-white' : 'bg-black/30 text-green-300 hover:bg-green-500/50'}`}>
+                    <Clock width={18} height={18} /> Analog Clock
+                </button>
             </div>
 
             <div className="w-full mt-6">
@@ -252,9 +264,24 @@ const FlipClock: React.FC = () => {
                     )}
                 </AnimatePresence>
             </div>
+            
+            {/* 🎯 পরিবর্তন: অ্যানালগ ঘড়িটি এখন শর্তসাপেক্ষে (conditionally) রেন্ডার হবে */}
+            <div className="w-full mt-8">
+                <AnimatePresence>
+                    {showAnalogClock && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, y: 20, height: 0 }}
+                            className="flex justify-center"
+                        >
+                            <AnalogClock />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
 
 export default FlipClock;
-

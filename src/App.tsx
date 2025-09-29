@@ -10,7 +10,7 @@ import WorldClock from './components/WorldClock';
 import Footer from './components/Footer';
 import type { Task } from './types'; 
 import { toYYYYMMDD } from './utils/helpers';
-import Calculator from './components/Calculator Hub/Calculator';
+import CalculatorHub from './components/CalculatorHub/Calculator';
 
 const App: React.FC = () => {
     // This state manages the list of tasks, loading them from localStorage on initial render.
@@ -72,7 +72,7 @@ const App: React.FC = () => {
                 
                 {/* The Calculator Hub is placed here in a full-width container to make it a central feature. */}
                 <div className="w-full">
-                    <Calculator />
+                    <CalculatorHub />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

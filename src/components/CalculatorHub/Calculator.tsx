@@ -8,12 +8,12 @@ const InputField = ({ label, value, onChange, unit, type = "number", placeholder
     <div>
         <label className="text-sm text-cyan-300">{label}</label>
         <div className="flex items-center">
-            <input 
-                type={type} 
-                value={value} 
-                onChange={onChange} 
+            <input
+                type={type}
+                value={value}
+                onChange={onChange}
                 placeholder={placeholder}
-                className="w-full mt-1 bg-black/30 p-2 rounded-md border border-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-400" 
+                className="w-full mt-1 bg-black/30 p-2 rounded-md border border-cyan-500/30 focus:outline-none focus:ring-2 focus:ring-cyan-400"
             />
             {unit && <span className="ml-2 text-cyan-300">{unit}</span>}
         </div>
@@ -35,7 +35,7 @@ const ResultDisplay = ({ label, value, subValue = "" }: { label: string, value: 
 const GeneralCalculator: React.FC = () => {
     const [input, setInput] = useState('');
     const handleClick = (value: string) => { if (input === "Error") { setInput(value); } else { setInput((prev) => prev + value); } };
-    const calculate = () => { try { setInput(String(eval(input.replace(/%/g, '/100')))); } catch { setInput("Error"); } };
+    const calculate = () => { try { setInput(String(new Function('return ' + input.replace(/%/g, '/100'))())); } catch { setInput("Error"); } };
     const clear = () => setInput("");
     const backspace = () => setInput(prev => prev.slice(0, -1));
     const buttons = ["C", "DEL", "%", "/", "7", "8", "9", "*", "4", "5", "6", "-", "1", "2", "3", "+", "00", "0", ".", "="];
@@ -57,7 +57,7 @@ const GeneralCalculator: React.FC = () => {
 const ScientificCalculator: React.FC = () => {
     const [input, setInput] = useState('');
     const handleClick = (value: string) => { setInput(prev => prev + value); };
-    const calculate = () => { try { let exp = input.replace(/sin\(/g, 'Math.sin(Math.PI/180*').replace(/cos\(/g, 'Math.cos(Math.PI/180*').replace(/tan\(/g, 'Math.tan(Math.PI/180*').replace(/log\(/g, 'Math.log10(').replace(/ln\(/g, 'Math.log(').replace(/√/g, 'Math.sqrt').replace(/π/g, 'Math.PI').replace(/e/g, 'Math.E').replace(/\^/g, '**'); setInput(eval(exp).toString()); } catch { setInput("Error"); } };
+    const calculate = () => { try { let exp = input.replace(/sin\(/g, 'Math.sin(Math.PI/180*').replace(/cos\(/g, 'Math.cos(Math.PI/180*').replace(/tan\(/g, 'Math.tan(Math.PI/180*').replace(/log\(/g, 'Math.log10(').replace(/ln\(/g, 'Math.log(').replace(/√/g, 'Math.sqrt').replace(/π/g, 'Math.PI').replace(/e/g, 'Math.E').replace(/\^/g, '**'); setInput(new Function('return ' + exp)().toString()); } catch { setInput("Error"); } };
     const clear = () => setInput("");
     const backspace = () => setInput(prev => prev.slice(0, -1));
     const sciButtons = [ 'sin(', 'cos(', 'tan(', 'log(', 'ln(', '√(', ')', '^', 'π', 'e' ];
@@ -285,8 +285,31 @@ const UnitConverter: React.FC = () => {
     const [toUnit, setToUnit] = useState('ft');
     const [inputValue, setInputValue] = useState('1');
     const units = Object.keys(CONVERSIONS[category]);
-    const result = useMemo(() => { const value = parseFloat(inputValue); if (isNaN(value)) return ''; if (fromUnit === toUnit) return value.toString(); if (category === 'temperature') { return CONVERSIONS.temperature[fromUnit][toUnit](value).toFixed(2); } else { const baseValue = value * CONVERSIONS[category][fromUnit]; const finalValue = baseValue / CONVERSIONS[category][toUnit]; return finalValue.toFixed(4); } }, [inputValue, fromUnit, toUnit, category]);
+
+    // 🎯 Error Fix Starts Here
+    const result = useMemo(() => {
+        const value = parseFloat(inputValue);
+        if (isNaN(value)) return '';
+        if (fromUnit === toUnit) return value.toString();
+
+        if (category === 'temperature') {
+            // Type assertion to tell TypeScript the shape of the temperature conversion object
+            const tempConversions = CONVERSIONS.temperature as Record<string, Record<string, (val: number) => number>>;
+            // Now, accessing with string keys is safe
+            return tempConversions[fromUnit][toUnit](value).toFixed(2);
+        } else {
+            // Type assertion for length and weight conversion objects
+            const unitConversions = CONVERSIONS[category] as Record<string, number>;
+            // Now, accessing with string keys is safe
+            const baseValue = value * unitConversions[fromUnit];
+            const finalValue = baseValue / unitConversions[toUnit];
+            return finalValue.toFixed(4);
+        }
+    }, [inputValue, fromUnit, toUnit, category]);
+    // 🎯 Error Fix Ends Here
+
     const handleCategoryChange = (cat: 'length' | 'weight' | 'temperature') => { setCategory(cat); if (cat === 'length') { setFromUnit('m'); setToUnit('ft'); } if (cat === 'weight') { setFromUnit('kg'); setToUnit('lb'); } if (cat === 'temperature') { setFromUnit('C'); setToUnit('F'); } };
+    
     return (
         <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-md mx-auto text-white">
             <div className="flex justify-center gap-2 mb-4"> <button onClick={() => handleCategoryChange('length')} className={`px-3 py-1 text-sm rounded-full ${category === 'length' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Length</button> <button onClick={() => handleCategoryChange('weight')} className={`px-3 py-1 text-sm rounded-full ${category === 'weight' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Weight</button> <button onClick={() => handleCategoryChange('temperature')} className={`px-3 py-1 text-sm rounded-full ${category === 'temperature' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>Temperature</button> </div>
@@ -325,28 +348,169 @@ const EquationSolver: React.FC = () => {
 };
 
 type Matrix = [[number, number], [number, number]];
+
 const MatrixCalculator: React.FC = () => {
-    const [matrixA, setMatrixA] = useState<Matrix>([[1, 2], [3, 4]]);
-    const [matrixB, setMatrixB] = useState<Matrix>([[5, 6], [7, 8]]);
-    const [operation, setOperation] = useState<'add' | 'subtract' | 'multiply'>('add');
-    const handleMatrixChange = (matrix: 'A' | 'B', row: number, col: number, value: string) => { const newMatrix: Matrix = matrix === 'A' ? [...matrixA] : [...matrixB]; newMatrix[row][col] = parseFloat(value) || 0; if (matrix === 'A') { setMatrixA(newMatrix); } else { setMatrixB(newMatrix); } };
-    const resultMatrix = useMemo<Matrix>(() => { const res: Matrix = [[0, 0], [0, 0]]; for (let i = 0; i < 2; i++) { for (let j = 0; j < 2; j++) { if (operation === 'add') { res[i][j] = matrixA[i][j] + matrixB[i][j]; } else if (operation === 'subtract') { res[i][j] = matrixA[i][j] - matrixB[i][j]; } else if (operation === 'multiply') { res[i][j] = matrixA[i][0] * matrixB[0][j] + matrixA[i][1] * matrixB[1][j]; } } } return res; }, [matrixA, matrixB, operation]);
-    const MatrixInput = ({ matrix, matrixName, onChange }: { matrix: Matrix, matrixName: 'A' | 'B', onChange: Function }) => ( <div className="flex flex-col items-center"> <p className="text-lg font-bold mb-2 text-cyan-300">Matrix {matrixName}</p> <div className="grid grid-cols-2 gap-2 p-2 bg-black/30 rounded-md"> {matrix.map((row, i) => row.map((cell, j) => ( <input key={`${matrixName}-${i}-${j}`} type="number" value={cell} onChange={(e) => onChange(matrixName, i, j, e.target.value)} className="w-16 h-16 bg-[#1e3a5f] text-center text-xl text-white rounded-md" /> )))} </div> </div> );
-    return (
-        <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-lg mx-auto text-white">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                <MatrixInput matrix={matrixA} matrixName="A" onChange={handleMatrixChange} />
-                <div className="flex md:flex-col gap-2"> <button onClick={() => setOperation('add')} className={`p-2 rounded-full ${operation === 'add' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>+</button> <button onClick={() => setOperation('subtract')} className={`p-2 rounded-full ${operation === 'subtract' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>-</button> <button onClick={() => setOperation('multiply')} className={`p-2 rounded-full ${operation === 'multiply' ? 'bg-cyan-500' : 'bg-[#1e3a5f]'}`}>×</button> </div>
-                <MatrixInput matrix={matrixB} matrixName="B" onChange={handleMatrixChange} />
-            </div>
-            <div className="mt-6 text-center"> <p className="text-lg font-bold text-amber-400">Result</p> <div className="p-4 bg-black/50 rounded-lg inline-block mt-2"> <div className="grid grid-cols-2 gap-2"> {resultMatrix.map((row, i) => row.map((cell, j) => ( <div key={`res-${i}-${j}`} className="w-16 h-16 flex items-center justify-center text-xl font-bold bg-[#102a43] rounded-md">{cell}</div> )))} </div> </div> </div>
+  const [matrixA, setMatrixA] = useState<Matrix>([[1, 2], [3, 4]]);
+  const [matrixB, setMatrixB] = useState<Matrix>([[5, 6], [7, 8]]);
+  const [operation, setOperation] = useState<
+    "add" | "subtract" | "multiply"
+  >("add");
+
+  // Update matrix values safely
+  const handleMatrixChange = (
+    matrix: "A" | "B",
+    row: number,
+    col: number,
+    value: string
+  ) => {
+    const newMatrix: Matrix =
+      matrix === "A"
+        ? (matrixA.map((r) => [...r]) as Matrix)
+        : (matrixB.map((r) => [...r]) as Matrix);
+
+    newMatrix[row][col] = parseFloat(value) || 0;
+
+    if (matrix === "A") {
+      setMatrixA(newMatrix);
+    } else {
+      setMatrixB(newMatrix);
+    }
+  };
+
+  // Compute result matrix
+  const resultMatrix = useMemo<Matrix>(() => {
+    const res: Matrix = [
+      [0, 0],
+      [0, 0],
+    ];
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        if (operation === "add") {
+          res[i][j] = matrixA[i][j] + matrixB[i][j];
+        } else if (operation === "subtract") {
+          res[i][j] = matrixA[i][j] - matrixB[i][j];
+        } else if (operation === "multiply") {
+          res[i][j] =
+            matrixA[i][0] * matrixB[0][j] +
+            matrixA[i][1] * matrixB[1][j];
+        }
+      }
+    }
+    return res;
+  }, [matrixA, matrixB, operation]);
+
+  // Component to render matrix inputs
+  const MatrixInput = ({
+    matrix,
+    matrixName,
+    onChange,
+  }: {
+    matrix: Matrix;
+    matrixName: "A" | "B";
+    onChange: (
+      matrix: "A" | "B",
+      row: number,
+      col: number,
+      value: string
+    ) => void;
+  }) => (
+    <div className="flex flex-col items-center">
+      <p className="text-lg font-bold mb-2 text-cyan-300">
+        Matrix {matrixName}
+      </p>
+      <div className="grid grid-cols-2 gap-2 p-2 bg-black/30 rounded-md">
+        {matrix.map((row, i) =>
+          row.map((cell, j) => (
+            <input
+              key={`${matrixName}-${i}-${j}`}
+              type="number"
+              value={cell}
+              onChange={(e) =>
+                onChange(matrixName, i, j, e.target.value)
+              }
+              className="w-16 h-16 bg-[#1e3a5f] text-center text-xl text-white rounded-md"
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-[#102a43] p-6 rounded-2xl shadow-lg max-w-lg mx-auto text-white">
+      <h3 className="text-xl text-center font-bold text-cyan-300 mb-4">
+        2x2 Matrix Calculator
+      </h3>
+
+      <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+        {/* Matrix A */}
+        <MatrixInput
+          matrix={matrixA}
+          matrixName="A"
+          onChange={handleMatrixChange}
+        />
+
+        {/* Operation buttons */}
+        <div className="flex md:flex-col gap-2">
+          <button
+            onClick={() => setOperation("add")}
+            className={`p-2 rounded-full ${
+              operation === "add" ? "bg-cyan-500" : "bg-[#1e3a5f]"
+            }`}
+          >
+            +
+          </button>
+          <button
+            onClick={() => setOperation("subtract")}
+            className={`p-2 rounded-full ${
+              operation === "subtract" ? "bg-cyan-500" : "bg-[#1e3a5f]"
+            }`}
+          >
+            -
+          </button>
+          <button
+            onClick={() => setOperation("multiply")}
+            className={`p-2 rounded-full ${
+              operation === "multiply" ? "bg-cyan-500" : "bg-[#1e3a5f]"
+            }`}
+          >
+            ×
+          </button>
         </div>
-    );
+
+        {/* Matrix B */}
+        <MatrixInput
+          matrix={matrixB}
+          matrixName="B"
+          onChange={handleMatrixChange}
+        />
+      </div>
+
+      {/* Result */}
+      <div className="mt-6 text-center">
+        <p className="text-lg font-bold text-amber-400">Result</p>
+        <div className="p-4 bg-black/50 rounded-lg inline-block mt-2">
+          <div className="grid grid-cols-2 gap-2">
+            {resultMatrix.map((row, i) =>
+              row.map((cell, j) => (
+                <div
+                  key={`res-${i}-${j}`}
+                  className="w-16 h-16 flex items-center justify-center text-xl font-bold bg-[#102a43] rounded-md"
+                >
+                  {cell}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 
 // --- Main Calculator Hub Component ---
-const CALCULATOR_TABS: Record<string, { label: string; description: string; component: JSX.Element }> = {
+const CALCULATOR_TABS: Record<string, { label: string; description: string; component: React.ReactNode }> = {
     general: { label: 'General', description: "A standard calculator for daily arithmetic operations.", component: <GeneralCalculator /> },
     scientific: { label: 'Scientific', description: "An advanced calculator for complex calculations, including trigonometric functions, logarithms, and roots.", component: <ScientificCalculator /> },
     age: { label: 'Age', description: "Calculates the exact age between two dates in years, months, and days.", component: <AgeCalculator /> },
@@ -403,4 +567,3 @@ const Calculator: React.FC = () => {
 };
 
 export default Calculator;
-
